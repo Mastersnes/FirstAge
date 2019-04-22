@@ -35,8 +35,8 @@ public class Menu extends AbstractScreen {
 
     @Override
     public void makeComponentEvents() {
-        onKeyhold((keycodes) -> {
-            if (keycodes.contains(Input.Keys.ESCAPE)) {
+        onKeyhold((mouse, keyboard) -> {
+            if (keyboard.hold(Input.Keys.ESCAPE)) {
                 Gdx.app.exit();
                 return;
             }

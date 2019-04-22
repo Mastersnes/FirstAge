@@ -10,11 +10,14 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.bebel.game.LaunchGame;
+import com.bebel.game.components.refound.event.Mouse;
 import com.bebel.game.manager.resources.AssetsManager;
 
 import java.util.Iterator;
 import java.util.List;
 
+import static com.badlogic.gdx.Gdx.input;
+import static com.badlogic.gdx.Input.Keys.ANY_KEY;
 import static com.bebel.game.components.refound.event.Events.*;
 import static com.bebel.game.utils.Constantes.GAME_HEIGHT;
 import static com.bebel.game.utils.Constantes.GAME_WIDTH;
@@ -24,9 +27,7 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
     public static Viewport viewport;
     protected final AssetsManager manager;
     protected ShapeRenderer debugShape = new ShapeRenderer();
-    protected Vector2 mouse = new Vector2();
     protected boolean renew = true, firstTime = true;
-
 
     public AbstractScreen(final LaunchGame game) {
         this.game = game;
@@ -71,6 +72,8 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
             debugShape.begin();
             drawDebug(debugShape);
             debugShape.end();
+
+            if (input.isKeyPressed(ANY_KEY)) keyHold();
         }
 
         actGroup(delta);
@@ -116,26 +119,41 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
     @Override
     public boolean keyDown(final int keycode) {
         if (!isVisible() || !isTouchable() || !isFocus()) return false;
+
         for (final Iterator<AbstractComponent> iterator = children.iterator(); iterator.hasNext();) {
             final AbstractComponent child = iterator.next();
             if (child.isVisible() && child.isTouchable() && child.isFocus()) {
-                child.fire(KEY_DOWN, keycode, '\u0000');
+                child.fire(KEY_DOWN);
             }
         }
-        fire(KEY_DOWN, keycode, '\u0000');
+        fire(KEY_DOWN);
         return true;
     }
 
     @Override
     public boolean keyUp(int keycode) {
         if (!isVisible() || !isTouchable() || !isFocus()) return false;
+
         for (final Iterator<AbstractComponent> iterator = children.iterator(); iterator.hasNext();) {
             final AbstractComponent child = iterator.next();
             if (child.isVisible() && child.isTouchable() && child.isFocus()) {
-                child.fire(KEY_UP, keycode, '\u0000');
+                child.fireKeyUp(KEY_UP, keycode);
             }
         }
-        fire(KEY_UP, keycode, '\u0000');
+        fireKeyUp(KEY_UP, keycode);
+        return true;
+    }
+
+    public boolean keyHold() {
+        if (!isVisible() || !isTouchable() || !isFocus()) return false;
+
+        for (final Iterator<AbstractComponent> iterator = children.iterator(); iterator.hasNext();) {
+            final AbstractComponent child = iterator.next();
+            if (child.isVisible() && child.isTouchable() && child.isFocus()) {
+                child.fire(KEY_HOLD);
+            }
+        }
+        fire(KEY_HOLD);
         return true;
     }
 
@@ -145,10 +163,10 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
         for (final Iterator<AbstractComponent> iterator = children.iterator(); iterator.hasNext();) {
             final AbstractComponent child = iterator.next();
             if (child.isVisible() && child.isTouchable() && child.isFocus()) {
-                child.fire(KEY_TYPE, -1, character);
+                child.fireType(KEY_TYPE, character);
             }
         }
-        fire(KEY_TYPE, -1, character);
+        fireType(KEY_TYPE, character);
         return true;
     }
 
@@ -160,11 +178,11 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
         for (final Iterator<AbstractComponent> iterator = children.iterator(); iterator.hasNext();) {
             final AbstractComponent child = iterator.next();
             if (child.isHover()) {
-                child.fire(TOUCH_DOWN, mouse.x, mouse.y, pointer, button);
+                child.fire(TOUCH_DOWN);
                 return true;
             }
         }
-        fire(TOUCH_DOWN, mouse.x, mouse.y, pointer, button);
+        fire(TOUCH_DOWN);
         return true;
     }
 
@@ -172,14 +190,15 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (!isVisible() || !isTouchable()) return false;
         if (!isInsideViewport(screenX, screenY)) return false;
+
         for (final Iterator<AbstractComponent> iterator = children.iterator(); iterator.hasNext();) {
             final AbstractComponent child = iterator.next();
             if (child.isHover()) {
-                child.fire(TOUCH_UP, mouse.x, mouse.y, pointer, button);
+                child.fireTouchUp(TOUCH_UP, pointer, button);
                 return true;
             }
         }
-        fire(TOUCH_UP, mouse.x, mouse.y, pointer, button);
+        fireTouchUp(TOUCH_UP, pointer, button);
         return true;
     }
 
@@ -188,13 +207,15 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
         if (!isVisible() || !isTouchable()) return false;
         if (!isInsideViewport(screenX, screenY)) return false;
 
+        final Mouse mouse = Mouse.getInstance();
+        final Vector2 oldMouse = mouse.cpy();
         mouse.set(screenX, screenY);
         mouse.set(viewport.unproject(mouse));
 
         for (final Iterator<AbstractComponent> iterator = children.iterator(); iterator.hasNext();) {
             final AbstractComponent child = iterator.next();
-            if (child.hit(mouse.x, mouse.y, true)) {
-                child.fire(TOUCH_DRAG, mouse.x, mouse.y, -1, -1);
+            if (child.hit(oldMouse.x, oldMouse.y, true)) {
+                child.fire(TOUCH_DRAG);
                 if (!child.isHover()) {
                     child.setHover(true);
                     child.fire(ENTER);
@@ -206,7 +227,7 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
                 child.fire(EXIT);
             }
         }
-        fire(TOUCH_DRAG, mouse.x, mouse.y, pointer, -1);
+        fire(TOUCH_DRAG);
         return true;
     }
 
@@ -216,6 +237,7 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
         if (!isInsideViewport(screenX, screenY)) return false;
         boolean trigger = false;
 
+        final Mouse mouse = Mouse.getInstance();
         mouse.set(screenX, screenY);
         mouse.set(viewport.unproject(mouse));
 
@@ -223,7 +245,7 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
             final AbstractComponent child = iterator.next();
             if (child.hit(mouse.x, mouse.y, true)) {
                 trigger = true;
-                child.fire(MOVE, mouse.x, mouse.y, -1, -1);
+                child.fire(MOVE);
                 if (!child.isHover()) {
                     child.setHover(true);
                     child.fire(ENTER);
@@ -233,22 +255,23 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
                 child.fire(EXIT);
             }
         }
-        fire(MOVE, mouse.x, mouse.y, -1, -1);
+        fire(MOVE);
         return trigger;
     }
 
     @Override
     public boolean scrolled(int amount) {
         if (!isVisible() || !isTouchable()) return false;
+        final Mouse mouse = Mouse.getInstance();
         if (!isInsideViewport(mouse.x, mouse.y)) return false;
         for (final Iterator<AbstractComponent> iterator = children.iterator(); iterator.hasNext();) {
             final AbstractComponent child = iterator.next();
             if (child.isHover()) {
-                child.fire(SCROLL, amount);
+                child.fireScroll(SCROLL, amount);
                 return true;
             }
         }
-        fire(SCROLL, amount);
+        fireScroll(SCROLL, amount);
         return true;
     }
 

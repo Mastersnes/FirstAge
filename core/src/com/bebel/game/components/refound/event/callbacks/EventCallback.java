@@ -1,4 +1,4 @@
-package com.bebel.game.components.refound.event;
+package com.bebel.game.components.refound.event.callbacks;
 
 /**
  * Represente un callback d'evenement

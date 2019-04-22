@@ -1,38 +1,39 @@
 package com.bebel.game.components.refound.abstrait;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.joints.MouseJoint;
 import com.badlogic.gdx.utils.Pool;
 import com.bebel.game.components.refound.event.*;
+import com.bebel.game.components.refound.event.callbacks.*;
 import com.bebel.game.components.refound.hitbox.IHitbox;
 import com.bebel.game.components.refound.hitbox.PolygonHitbox;
-import com.bebel.game.manager.EventManager;
 import com.bebel.game.manager.resources.AssetsManager;
-import org.w3c.dom.events.MouseEvent;
 
-import java.util.ArrayList;
-
+import static com.badlogic.gdx.Gdx.input;
+import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.utils.Align.*;
 import static com.bebel.game.components.refound.event.Events.*;
+import static com.bebel.game.components.refound.event.Events.ENTER;
 import static com.bebel.game.utils.Constantes.GAME_HEIGHT;
 import static com.bebel.game.utils.Constantes.GAME_WIDTH;
 
 public abstract class AbstractComponent extends Sprite implements Pool.Poolable {
     private Vector2 tmp = new Vector2();
-    private EventManager events = new EventManager();
+    private EventCatcher events = new EventCatcher();
     protected String name;
     protected AbstractGroup parent;
     protected AssetsManager manager;
     protected IHitbox hitbox;
     protected Color debugColor;
 
+    private boolean selected = false;
+
     protected boolean touchable, visible, debug, focus, hover;
-    private final ArrayList<Integer> keyHolds = new ArrayList<>();
 
     public AbstractComponent() {
         super();
@@ -48,51 +49,56 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
         visible = true;
         debug = false;
         focus = false;
-        keyHolds.clear();
         events.clear();
         debugColor = Color.GREEN.cpy();
         setColor(Color.WHITE.cpy());
         parent = null;
     }
 
-    /**
-     * Permet de (re)demarrer l'element
-     */
     public void act(final float delta) {
-        if (!keyHolds.isEmpty()) events.fire(KEY_HOLD, keyHolds);
         actComponent(delta);
     }
 
     protected abstract void actComponent(float delta);
 
     public void makeEvents() {
-        onTouchdown((x, y, pointer, button) -> {
-            if (button == Input.Buttons.RIGHT) {
+        onTouchdown((mouse, keyboard) -> {
+            if (mouse.right() && keyboard.hold(CONTROL_LEFT))
                 debug = !debug;
-            }
         });
 
-        onEnter(()-> setFocus(true));
-        onExit(()-> setFocus(false));
-
-        onKeyhold(keycodes -> {
-            if (!debug && !focus) return;
-            if (keycodes.contains(Input.Keys.LEFT)) rotate(-0.5f);
-            if (keycodes.contains(Input.Keys.RIGHT)) rotate(0.5f);
-            if (keycodes.contains(Input.Keys.UP)) scale(0.1f);
-            if (keycodes.contains(Input.Keys.DOWN)) scale(-0.1f);
+        onEnter((mouse, keyboard)-> {
+            if (debug) setFocus(true);
         });
-        onScroll(amount -> {
-            if (!debug && !focus) return;
+        onExit((mouse, keyboard)-> {
+            if (debug) setFocus(false);
+        });
+
+        onKeyhold((mouse, keyboard)-> {
+            if (!debug  || !focus) return;
+            if (keyboard.left()) rotate(-0.5f);
+            else if (keyboard.right()) rotate(0.5f);
+            if (keyboard.up()) scale(0.1f);
+            else if (keyboard.down()) scale(-0.1f);
+        });
+        onScroll((mouse, keyboard, amount)-> {
+            if (!debug || !focus) return;
             if (amount > 0) scale(0.05f);
             else scale(-0.05f);
         });
-        onDrag((x, y, pointer, button) -> {
-            if (!debug && !focus) return;
-            if (button == Input.Buttons.LEFT) {
+        onDrag((mouse, keyboard) -> {
+            if (!debug || !focus) return;
+            if (mouse.left()) {
                 final float w = getWidth();
                 final float h = getHeight();
-                setPosition(x - (w / 2), y - (h / 2));
+                setPosition(mouse.x - (w / 2), mouse.y - (h / 2));
+            }
+        });
+        onKeydown((mouse, keyboard) -> {
+            if (keyboard.press(SHIFT_LEFT)) {
+                Gdx.app.debug(getName(), "Rotation: " + getRotation());
+                Gdx.app.debug(getName(), "Scale: " + getScaleX() + ", " + getScaleY());
+                Gdx.app.debug(getName(), "Position: " + getX() + ", " + getY());
             }
         });
 
@@ -238,58 +244,38 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
     }
 
     //---- Events
-    public void onEnter(final HoverCallback event) {
-        onHover(ENTER, event);
+    public void onEnter(final GeneralCallback event) {
+        events.add(ENTER, event);
+    }
+    public void onExit(final GeneralCallback event) {
+        events.add(EXIT, event);
     }
 
-    public void onExit(final HoverCallback event) {
-        onHover(EXIT, event);
+    public void onKeyup(final KeyUpCallback event) {
+        events.add(KEY_UP, event);
     }
-
-    private void onHover(final Events type, final HoverCallback event) {
-        events.add(type, event);
+    public void onKeytype(final KeyTypeCallback event) {
+        events.add(KEY_TYPE, event);
     }
-
-    public void onKeyup(final KeyboardCallback event) {
-        onKeyboard(KEY_UP, event);
+    public void onKeydown(final GeneralCallback event) {
+        events.add(KEY_DOWN, event);
     }
-
-    public void onKeydown(final KeyboardCallback event) {
-        onKeyboard(KEY_DOWN, event);
-    }
-
-    public void onKeytype(final KeyboardCallback event) {
-        onKeyboard(KEY_TYPE, event);
-    }
-
-    private void onKeyboard(final Events type, final KeyboardCallback event) {
-        events.add(type, event);
-    }
-
-    public void onKeyhold(final KeyholdCallback event) {
+    public void onKeyhold(final GeneralCallback event) {
         events.add(KEY_HOLD, event);
     }
 
-    public void onTouchdown(final MouseCallback event) {
-        onMouse(TOUCH_DOWN, event);
+    public void onTouchdown(final GeneralCallback event) {
+        events.add(TOUCH_DOWN, event);
     }
-
-    public void onTouchup(final MouseCallback event) {
-        onMouse(TOUCH_UP, event);
+    public void onDrag(final GeneralCallback event) {
+        events.add(TOUCH_DRAG, event);
     }
-
-    public void onDrag(final MouseCallback event) {
-        onMouse(TOUCH_DRAG, event);
+    public void onMouseMove(final GeneralCallback event) {
+        events.add(MOVE, event);
     }
-
-    public void onMouseMove(final MouseCallback event) {
-        onMouse(MOVE, event);
+    public void onTouchup(final MouseUpCallback event) {
+        events.add(TOUCH_UP, event);
     }
-
-    private void onMouse(final Events type, final MouseCallback event) {
-        events.add(type, event);
-    }
-
     public void onScroll(final ScrollCallback event) {
         events.add(SCROLL, event);
     }
@@ -298,19 +284,18 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
         events.fire(type);
     }
 
-    protected void fire(final Events type, final int keycode, final char character) {
-        if (type == KEY_DOWN) keyHolds.add(Integer.valueOf(keycode));
-        else if (type == KEY_UP) keyHolds.remove(Integer.valueOf(keycode));
-
-        events.fire(type, keycode, character);
+    protected void fireKeyUp(final Events type, final int keycode) {
+        events.fireKeyUp(type, keycode);
+    }
+    protected void fireType(final Events type, final char character) {
+        events.fireType(type, character);
     }
 
-    protected void fire(final Events type, final float x, final float y, final int pointer, final int button) {
-        events.fire(type, x, y, pointer, button);
+    protected void fireTouchUp(final Events type, final int pointer, final int button) {
+        events.fireTouchUp(type, pointer, button);
     }
-
-    protected void fire(final Events type, final float amount) {
-        events.fire(type, amount);
+    protected void fireScroll(final Events type, final float amount) {
+        events.fireScroll(type, amount);
     }
 
     private Vector2 realign(final float xAmount, final float yAmount, final int align) {
