@@ -1,13 +1,11 @@
 package com.bebel.game.components.refound.element;
 
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Pools;
 import com.bebel.game.components.interfaces.Refreshable;
 import com.bebel.game.components.refound.abstrait.AbstractComponent;
-import com.bebel.game.screens.menu.Menu;
 
 public class Text extends AbstractComponent implements Refreshable {
     private Matrix4 oldMatrix, transform;
@@ -51,8 +49,8 @@ public class Text extends AbstractComponent implements Refreshable {
 
         batch.setTransformMatrix(transform);
 
-        cache.tint(getColor());
         cache.setText(layout, 0, 0);
+        cache.tint(getColor());
         cache.setPosition(-getOriginX(), -getOriginY() + getHeight());
         cache.draw(batch, alphaModulation);
 

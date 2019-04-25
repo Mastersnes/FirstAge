@@ -4,10 +4,9 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Logger;
-import com.bebel.game.components.refound.abstrait.AbstractComponent;
 import com.bebel.game.manager.resources.AssetsManager;
 import com.bebel.game.manager.resources.ScreensManager;
-import com.bebel.game.screens.menu.Menu;
+import com.bebel.game.screens.Menu;
 
 /**
  * Main

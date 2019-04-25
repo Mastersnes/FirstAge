@@ -28,11 +28,24 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
     public static Viewport viewport;
     protected final AssetsManager manager;
     protected ShapeRenderer debugShape = new ShapeRenderer();
-    protected boolean renew = true, firstTime = true;
-    protected Color back =  Color.BLACK.cpy();
+    protected boolean firstTime = true;
+
+    /**
+     * Indique si la scene doit etre reinit à chaque changement d'ecran
+     */
+    protected boolean renew;
+    protected final Color backColor;
 
     public AbstractScreen(final LaunchGame game) {
+        this(game, true);
+    }
+    public AbstractScreen(final LaunchGame game, final boolean renew) {
+        this(game, renew, Color.BLACK.cpy());
+    }
+    public AbstractScreen(final LaunchGame game, final boolean renew, final Color backColor) {
         this.game = game;
+        this.renew = renew;
+        this.backColor = backColor;
         final OrthographicCamera camera = new OrthographicCamera();
         camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
         viewport = new FitViewport(GAME_WIDTH, GAME_HEIGHT, camera);
@@ -59,6 +72,7 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
 
     @Override
     public void render(final float delta) {
+        final Color back = backColor;
         Gdx.gl.glClearColor(back.r, back.g, back.b, back.a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -100,6 +114,9 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
 
     @Override
     public void hide() {
+        hideWithRenew(renew);
+    }
+    public void hideWithRenew(final boolean renew) {
         Gdx.input.setInputProcessor(null);
         if (renew) {
             manager.unloadContext(context());
@@ -109,7 +126,7 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
 
     @Override
     public void dispose() {
-        hide();
+        hideWithRenew(true);
         Gdx.app.log(context(), "DISPOSE");
     }
 

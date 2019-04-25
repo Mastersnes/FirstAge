@@ -234,6 +234,11 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
         parent.children.insert(z, this);
     }
 
+    public void center() {
+        if (parent == null) return;
+        setCenter(parent.getWidth() / 2, parent.getHeight() / 2);
+    }
+
     //---- Changement d'etat
     public void sizeChanged() {
         hitbox.setSize(getWidth(), getHeight());

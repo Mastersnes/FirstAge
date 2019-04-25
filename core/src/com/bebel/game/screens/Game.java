@@ -1,33 +1,32 @@
-package com.bebel.game.screens.menu;
+package com.bebel.game.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.bebel.game.LaunchGame;
 import com.bebel.game.components.refound.abstrait.AbstractScreen;
-import com.bebel.game.components.refound.element.Animate;
 import com.bebel.game.components.refound.element.Image;
+import com.bebel.game.components.refound.element.Text;
+import com.bebel.game.manager.resources.ScreensManager;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static com.bebel.game.utils.ElementFactory.animate;
+import static com.bebel.game.utils.ElementFactory.image;
+import static com.bebel.game.utils.ElementFactory.text;
 
-public class Menu extends AbstractScreen {
-    private Animate animation;
-    private Image img;
+public class Game extends AbstractScreen {
+    private Text text;
 
-    public Menu(final LaunchGame game) {
+    public Game(final LaunchGame game) {
         super(game);
-        renew = false;
-        back = Color.WHITE.cpy();
     }
 
     @Override
     public void create() {
-        add(animation = animate("test"));
-        animation.setCenter(getWidth() / 2, getHeight() / 2);
-        animation.hideOnFinish();
+        add(text = text("label.delete"));
+        text.center();
+        text.setColor(Color.RED.cpy());
 
         setFocus(true);
     }
@@ -40,9 +39,10 @@ public class Menu extends AbstractScreen {
                 return;
             }
         });
-        onTouchdown((mouse, keyboard) -> {
+
+        text.onTouchdown((mouse, keyboard) -> {
             if (!mouse.left()) return;
-            animation.restart();
+            ScreensManager.getInstance().switchTo(Menu.class);
         });
     }
 
@@ -52,7 +52,7 @@ public class Menu extends AbstractScreen {
 
     @Override
     protected String context() {
-        return "menu";
+        return "game";
     }
 
     @Override
