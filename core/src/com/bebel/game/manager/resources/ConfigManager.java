@@ -3,6 +3,7 @@ package com.bebel.game.manager.resources;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.files.FileHandle;
@@ -18,6 +19,7 @@ import java.util.Properties;
  * Manager de configuration
  */
 public class ConfigManager {
+    private final Preferences conf;
     private AssetsManager parent;
 
     private String language;
@@ -27,42 +29,23 @@ public class ConfigManager {
 
     public ConfigManager(final AssetsManager manager) {
         this.parent = manager;
-        final FileHandle file = Gdx.files.external("/firstage/conf/firstage.conf");
-        if (file.exists()) {
-            try (final InputStream in = file.read()) {
-                final Properties prop = new Properties();
-                prop.load(in);
-                language = prop.getProperty("language", Locale.getDefault().getLanguage());
-                sound = Float.valueOf(prop.getProperty("sound", "50"));
-                music = Float.valueOf(prop.getProperty("music", "50"));
-                setFullscreen(Boolean.valueOf(prop.getProperty("fullscreen", String.valueOf(true))));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }else {
-            language = Locale.getDefault().getLanguage();
-            sound = 50;
-            music = 50;
-            setFullscreen(true);
-            save();
-        }
+        conf = Gdx.app.getPreferences("firstage");
+        language = conf.getString("language", Locale.getDefault().getLanguage());
+        sound = conf.getFloat("sound", 50);
+        music = conf.getFloat("music", 50);
+        setFullscreen(conf.getBoolean("fullscreen", false));
+        save();
     }
 
     /**
      * Sauvegarde les configurations
      */
     public void save() {
-        final FileHandle file = Gdx.files.external("/firstage/conf/firstage.conf");
-        try (final OutputStreamWriter out = (OutputStreamWriter) file.writer(false)) {
-            final Properties prop = new Properties();
-            prop.setProperty("language", language);
-            prop.setProperty("sound", String.valueOf(sound));
-            prop.setProperty("music", String.valueOf(music));
-            prop.setProperty("fullscreen", String.valueOf(fullscreen));
-            prop.store(out, null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        conf.putString("language", language);
+        conf.putFloat("sound", sound);
+        conf.putFloat("music", music);
+        conf.putBoolean("fullscreen", fullscreen);
+        conf.flush();
     }
 
     public float getMusic() {

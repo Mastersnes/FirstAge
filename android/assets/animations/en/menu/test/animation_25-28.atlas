@@ -1,0 +1,33 @@
+animation_25-28.png
+size: 2048, 1536
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+frame0025
+  rotate: false
+  xy: 0, 0
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1
+frame0026
+  rotate: false
+  xy: 1024, 0
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1
+frame0027
+  rotate: false
+  xy: 0, 768
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1
+frame0028
+  rotate: false
+  xy: 1024, 768
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1

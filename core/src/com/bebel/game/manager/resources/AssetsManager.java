@@ -147,6 +147,10 @@ public class AssetsManager extends AssetManager {
     }
 
     //--Utils
+
+    /**
+     * Genere l'animation present dans le dossier key
+     */
     public Animation<TextureRegion> getAnimation(final String key, final Animation.PlayMode playMode, final float fps) {
         return animations.getAnimation(key, playMode, fps);
     }

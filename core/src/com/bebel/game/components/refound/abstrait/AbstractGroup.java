@@ -60,6 +60,7 @@ public abstract class AbstractGroup extends AbstractComponent implements Refresh
     }
 
     public void remove(final AbstractComponent child) {
+        Pools.free(child);
         children.removeValue(child, true);
         child.setParent(null);
     }

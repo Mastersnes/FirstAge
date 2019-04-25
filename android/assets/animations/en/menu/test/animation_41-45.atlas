@@ -1,0 +1,40 @@
+animation_41-45.png
+size: 2048, 1536
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+frame0041
+  rotate: false
+  xy: 0, 0
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1
+frame0042
+  rotate: false
+  xy: 1024, 0
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1
+frame0043
+  rotate: false
+  xy: 0, 768
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1
+frame0044
+  rotate: false
+  xy: 1024, 768
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1
+frame0045
+  rotate: false
+  xy: 1024, 768
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1

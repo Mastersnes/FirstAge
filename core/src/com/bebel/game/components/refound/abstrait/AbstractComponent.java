@@ -1,24 +1,34 @@
 package com.bebel.game.components.refound.abstrait;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Pool;
-import com.bebel.game.components.refound.event.*;
+import com.badlogic.gdx.utils.Pools;
+import com.bebel.game.components.refound.action.AbstractAction;
+import com.bebel.game.components.refound.action.Actions;
+import com.bebel.game.components.refound.action.ordonnancement.ParallelAction;
+import com.bebel.game.components.refound.action.ordonnancement.RunnableAction;
+import com.bebel.game.components.refound.action.ordonnancement.SequenceAction;
+import com.bebel.game.components.refound.event.EventCatcher;
+import com.bebel.game.components.refound.event.Events;
 import com.bebel.game.components.refound.event.callbacks.*;
 import com.bebel.game.components.refound.hitbox.IHitbox;
 import com.bebel.game.components.refound.hitbox.PolygonHitbox;
 import com.bebel.game.manager.resources.AssetsManager;
 
-import static com.badlogic.gdx.Gdx.input;
-import static com.badlogic.gdx.Input.Keys.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import static com.badlogic.gdx.Input.Keys.CONTROL_LEFT;
+import static com.badlogic.gdx.Input.Keys.SHIFT_LEFT;
 import static com.badlogic.gdx.utils.Align.*;
+import static com.bebel.game.components.refound.action.Actions.*;
 import static com.bebel.game.components.refound.event.Events.*;
-import static com.bebel.game.components.refound.event.Events.ENTER;
 import static com.bebel.game.utils.Constantes.GAME_HEIGHT;
 import static com.bebel.game.utils.Constantes.GAME_WIDTH;
 
@@ -30,6 +40,7 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
     protected AssetsManager manager;
     protected IHitbox hitbox;
     protected Color debugColor;
+    protected List<AbstractAction> actions = new ArrayList<>();
 
     private boolean selected = false;
 
@@ -56,6 +67,13 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
     }
 
     public void act(final float delta) {
+        for (final Iterator<AbstractAction> iterator = actions.iterator(); iterator.hasNext();) {
+            final AbstractAction action = iterator.next();
+            if (action.act(delta)) {
+                Pools.free(action);
+                iterator.remove();
+            }
+        }
         actComponent(delta);
     }
 
@@ -115,6 +133,7 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
     }
 
     public void remove() {
+        Pools.free(this);
         if (parent != null) {
             parent.remove(this);
             parent = null;
@@ -298,7 +317,7 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
         events.fireScroll(type, amount);
     }
 
-    private Vector2 realign(final float xAmount, final float yAmount, final int align) {
+    public Vector2 realign(final float xAmount, final float yAmount, final int align) {
         float x = xAmount;
         float y = yAmount;
         float pW = GAME_WIDTH, pH = GAME_HEIGHT;
@@ -365,6 +384,10 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
         sizeChanged();
     }
 
+    public void rotateBy(final float degrees) {
+        setRotation(getRotation() + degrees);
+    }
+
     @Override
     public void setRotation(float degrees) {
         super.setRotation(degrees);
@@ -387,6 +410,10 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
     public void setScale(float scaleXY) {
         super.setScale(scaleXY);
         scaleChanged();
+    }
+
+    public void addScale(float x, float y) {
+        setScale(getScaleX() + x, getScaleY() + y);
     }
 
     @Override
@@ -417,5 +444,38 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
     public void setOriginCenter() {
         super.setOriginCenter();
         originChanged();
+    }
+
+    //- Actions
+    public List<AbstractAction> getActions() {
+        return actions;
+    }
+
+    public void addSequence(final AbstractAction... actions) {
+        addAction(sequence(actions));
+    }
+    public void addParallel(final AbstractAction... actions) {
+        addAction(parallel(actions));
+    }
+    public void addAction(final AbstractAction action) {
+        action.setTarget(this);
+        this.actions.add(action);
+    }
+    public void runAction(final Runnable r) {
+        addAction(run(r));
+    }
+
+    //- Logs
+    public void error(final String message, final Throwable e) {
+        Gdx.app.error(getName(), message, e);
+    }
+    public void debug(final String message) {
+        Gdx.app.debug(getName(), message);
+    }
+    public void debug(final String message, final Throwable e) {
+        Gdx.app.debug(getName(), message, e);
+    }
+    public void log(final String message) {
+        Gdx.app.log(getName(), message);
     }
 }

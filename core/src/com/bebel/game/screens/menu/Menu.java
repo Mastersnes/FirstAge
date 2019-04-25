@@ -2,33 +2,32 @@ package com.bebel.game.screens.menu;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.bebel.game.LaunchGame;
 import com.bebel.game.components.refound.abstrait.AbstractScreen;
+import com.bebel.game.components.refound.element.Animate;
 import com.bebel.game.components.refound.element.Image;
-import com.bebel.game.components.refound.element.Text;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static com.bebel.game.utils.ElementFactory.image;
-import static com.bebel.game.utils.ElementFactory.text;
+import static com.bebel.game.utils.ElementFactory.animate;
 
 public class Menu extends AbstractScreen {
+    private Animate animation;
     private Image img;
-    private Text elmt;
 
     public Menu(final LaunchGame game) {
         super(game);
         renew = false;
+        back = Color.WHITE.cpy();
     }
 
     @Override
     public void create() {
-        add(elmt = text("Ceci est un test"));
-        elmt.setCenter(getWidth() / 2, getHeight() / 2);
-
-        add(img = image("general/quitter.png"));
-        img.setPosition(10, 10);
+        add(animation = animate("test"));
+        animation.setCenter(getWidth() / 2, getHeight() / 2);
+        animation.hideOnFinish();
 
         setFocus(true);
     }
@@ -40,6 +39,10 @@ public class Menu extends AbstractScreen {
                 Gdx.app.exit();
                 return;
             }
+        });
+        onTouchdown((mouse, keyboard) -> {
+            if (!mouse.left()) return;
+            animation.restart();
         });
     }
 

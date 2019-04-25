@@ -1,0 +1,33 @@
+animation_13-16.png
+size: 2048, 1536
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+frame0013
+  rotate: false
+  xy: 0, 0
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1
+frame0014
+  rotate: false
+  xy: 1024, 0
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1
+frame0015
+  rotate: false
+  xy: 0, 768
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1
+frame0016
+  rotate: false
+  xy: 1024, 768
+  size: 1024, 768
+  orig: 1024, 768
+  offset: 0, 0
+  index: -1

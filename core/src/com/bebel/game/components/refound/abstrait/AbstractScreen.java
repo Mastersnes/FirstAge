@@ -3,6 +3,7 @@ package com.bebel.game.components.refound.abstrait;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -28,6 +29,7 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
     protected final AssetsManager manager;
     protected ShapeRenderer debugShape = new ShapeRenderer();
     protected boolean renew = true, firstTime = true;
+    protected Color back =  Color.BLACK.cpy();
 
     public AbstractScreen(final LaunchGame game) {
         this.game = game;
@@ -57,7 +59,7 @@ public abstract class AbstractScreen extends AbstractGroup implements Screen, In
 
     @Override
     public void render(final float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(back.r, back.g, back.b, back.a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         viewport.getCamera().update();
