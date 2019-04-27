@@ -22,17 +22,8 @@ public class UI extends AbstractGroup {
         setBounds(0, 0, GAME_WIDTH, 100, bottomLeft);
         debug(Color.GREEN.cpy());
 
-        addCases();
-
         showInventory();
         return this;
-    }
-
-    private void addCases() {
-        boolean ok = false;
-        while (!ok) {
-            final UICase uiCase = group(UICase.class);
-        }
     }
 
     private void showInventory() {

@@ -423,7 +423,7 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
 
     @Override
     public void setBounds(float x, float y, float width, float height) {
-        setBounds(x, y, width, height, topLeft);
+        setBounds(x, y, width, height, bottomLeft);
     }
     public void setBounds(float x, float y, float width, float height, int align) {
         setPosition(x, y, align);
