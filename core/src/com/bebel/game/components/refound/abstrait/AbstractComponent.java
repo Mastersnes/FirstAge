@@ -92,10 +92,22 @@ public abstract class AbstractComponent extends Sprite implements Pool.Poolable 
 
         onKeyhold((mouse, keyboard)-> {
             if (!debug  || !focus) return;
-            if (keyboard.left()) rotate(-0.5f);
-            else if (keyboard.right()) rotate(0.5f);
-            if (keyboard.up()) scale(0.1f);
-            else if (keyboard.down()) scale(-0.1f);
+            if (keyboard.left()) {
+                if (keyboard.hold(CONTROL_LEFT)) rotate(-0.5f);
+                else translateX(-1);
+            }
+            else if (keyboard.right()) {
+                if (keyboard.hold(CONTROL_LEFT)) rotate(0.5f);
+                else translateX(1);
+            }
+            if (keyboard.up()) {
+                if (keyboard.hold(CONTROL_LEFT)) scale(0.1f);
+                else translateY(1);
+            }
+            else if (keyboard.down()) {
+                if (keyboard.hold(CONTROL_LEFT)) scale(-0.1f);
+                else translateY(-1);
+            }
             parent.stopPropagation();
         });
         onScroll((mouse, keyboard, amount)-> {
